@@ -125,40 +125,30 @@ module WooCommerce
     def do_request method, endpoint, data = {}
       url = get_url(endpoint, method)
       options = {
-        format: :json
-      }
-
-      # Allow custom HTTParty args.
-      options = options.merge(@httparty_args)
-
-      # Set headers.
-      options[:headers] = {
-        "User-Agent" => "WooCommerce API Client-Ruby/#{WooCommerce::VERSION}",
-        "Accept" => "application/json"
+        format: :json,
+        headers: {
+          "User-Agent" => "WooCommerce API Client-Ruby/#{WooCommerce::VERSION}",
+          Accept: "application/json"
+        }
       }
       options[:headers]["Content-Type"] = "application/json;charset=utf-8" if !data.empty?
+      options.merge!(method: method, verify_ssl: @verify_ssl)
 
       # Set basic authentication.
-      if @is_ssl
-        options[:verify] = @verify_ssl
-
-        if @query_string_auth
-          options.merge!(query: {
-            consumer_key: @consumer_key,
-            consumer_secret: @consumer_secret
-          })
-        else
-          options.merge!(basic_auth: {
-            username: @consumer_key,
-            password: @consumer_secret
-          })
-        end
+      if @query_string_auth
+        uri = URI.parse(endpoint)
+        new_query_ar = URI.decode_www_form(String(uri.query)) << [consumer_key: @consumer_key, consumer_secret: @consumer_secret]
+        uri.query = URI.encode_www_form(new_query_ar)
+        options[:url] = uri.to_s
+      else
+        options.merge!({
+                         username: @consumer_key,
+                         password: @consumer_secret
+                       })
       end
+      options.merge!(payload: data.to_json) if !data.empty?
 
-      options.merge!(debug_output: $stdout) if @debug_mode
-      options.merge!(body: data.to_json) if !data.empty?
-
-      HTTParty.send(method, url, options)
+      RestClient::Request.execute(options)
     end
 
     # Internal: Generates an oauth url given current settings
@@ -192,7 +182,7 @@ module WooCommerce
             "#{key}[#{inner_key}]=#{inner_value}"
           end
         when Array
-          value.map { |inner_value| "#{key}[]=#{inner_value}" }
+          value.map {|inner_value| "#{key}[]=#{inner_value}"}
         else
           "#{key}=#{value}"
         end
