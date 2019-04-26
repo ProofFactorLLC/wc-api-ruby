@@ -136,8 +136,10 @@ module WooCommerce
 
       # Set basic authentication.
       if @query_string_auth
-        uri = URI.parse(endpoint)
-        new_query_ar = URI.decode_www_form(String(uri.query)) << [consumer_key: @consumer_key, consumer_secret: @consumer_secret]
+        uri = URI.parse(url)
+        new_query_ar = URI.decode_www_form(uri.query || '')
+        new_query_ar << [:consumer_key, @consumer_key]
+        new_query_ar << [:consumer_secret, @consumer_secret]
         uri.query = URI.encode_www_form(new_query_ar)
         options[:url] = uri.to_s
       else
@@ -147,6 +149,8 @@ module WooCommerce
                        })
       end
       options.merge!(payload: data.to_json) if !data.empty?
+
+      puts "do_request: #{options}"
 
       RestClient::Request.execute(options)
     end
