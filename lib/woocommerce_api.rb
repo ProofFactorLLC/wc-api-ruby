@@ -29,7 +29,7 @@ module WooCommerce
       @signature_method = args[:signature_method]
       @debug_mode = args[:debug_mode]
       @query_string_auth = args[:query_string_auth]
-      @httparty_args = args[:httparty_args]
+      @rest_client_args = args[:rest_client_args]
 
       # Internal args
       @is_ssl = @url.start_with? "https"
@@ -149,8 +149,7 @@ module WooCommerce
                        })
       end
       options.merge!(payload: data.to_json) if !data.empty?
-
-      puts "do_request: #{options}"
+      options.merge!(@rest_client_args) if @rest_client_args
 
       RestClient::Request.execute(options)
     end
