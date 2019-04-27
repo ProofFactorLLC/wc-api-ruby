@@ -137,14 +137,12 @@ module WooCommerce
       # Set basic authentication.
       if @is_ssl
         options[:verify] = @verify_ssl
-
         if @query_string_auth
           uri = URI.parse(url)
           new_query_ar = URI.decode_www_form(uri.query || '')
           new_query_ar << [:consumer_key, @consumer_key]
           new_query_ar << [:consumer_secret, @consumer_secret]
           uri.query = URI.encode_www_form(new_query_ar)
-          options[:url] = uri.to_s
         else
           options.merge!({
                            username: @consumer_key,
@@ -153,6 +151,7 @@ module WooCommerce
         end
       end
 
+      options[:url] = uri.to_s
       options.merge!(payload: data.to_json) if !data.empty?
       options.merge!(@rest_client_args) if @rest_client_args
 
