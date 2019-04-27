@@ -132,22 +132,27 @@ module WooCommerce
         }
       }
       options[:headers]["Content-Type"] = "application/json;charset=utf-8" if !data.empty?
-      options.merge!(method: method, verify_ssl: @verify_ssl)
+      options.merge!(method: method)
 
       # Set basic authentication.
-      if @query_string_auth
-        uri = URI.parse(url)
-        new_query_ar = URI.decode_www_form(uri.query || '')
-        new_query_ar << [:consumer_key, @consumer_key]
-        new_query_ar << [:consumer_secret, @consumer_secret]
-        uri.query = URI.encode_www_form(new_query_ar)
-        options[:url] = uri.to_s
-      else
-        options.merge!({
-                         username: @consumer_key,
-                         password: @consumer_secret
-                       })
+      if @is_ssl
+        options[:verify] = @verify_ssl
+
+        if @query_string_auth
+          uri = URI.parse(url)
+          new_query_ar = URI.decode_www_form(uri.query || '')
+          new_query_ar << [:consumer_key, @consumer_key]
+          new_query_ar << [:consumer_secret, @consumer_secret]
+          uri.query = URI.encode_www_form(new_query_ar)
+          options[:url] = uri.to_s
+        else
+          options.merge!({
+                           username: @consumer_key,
+                           password: @consumer_secret
+                         })
+        end
       end
+
       options.merge!(payload: data.to_json) if !data.empty?
       options.merge!(@rest_client_args) if @rest_client_args
 
