@@ -136,7 +136,7 @@ module WooCommerce
 
       # Set basic authentication.
       if @is_ssl
-        options[:verify] = @verify_ssl
+        options[:verify_ssl] = @verify_ssl
         if @query_string_auth
           uri = URI.parse(url)
           new_query_ar = URI.decode_www_form(uri.query || '')
