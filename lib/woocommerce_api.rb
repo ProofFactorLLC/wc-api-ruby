@@ -143,6 +143,7 @@ module WooCommerce
           new_query_ar << [:consumer_key, @consumer_key]
           new_query_ar << [:consumer_secret, @consumer_secret]
           uri.query = URI.encode_www_form(new_query_ar)
+          url = uri.to_s
         else
           options.merge!({
                            username: @consumer_key,
@@ -151,7 +152,7 @@ module WooCommerce
         end
       end
 
-      options[:url] = uri.to_s
+      options[:url] = url
       options.merge!(payload: data.to_json) if !data.empty?
       options.merge!(@rest_client_args) if @rest_client_args
 
