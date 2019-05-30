@@ -2,10 +2,12 @@
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "rubygems"
+require "woocommerce_api/version"
+
 
 Gem::Specification.new do |s|
   s.name = "woocommerce_api"
-  s.version = '1.4.5'
+  s.version = WooCommerce::VERSION
   s.date = "2016-12-14"
 
   s.summary = "A Ruby wrapper for the WooCommerce API"
