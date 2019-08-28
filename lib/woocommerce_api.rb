@@ -9,27 +9,27 @@ module WooCommerce
 
     def initialize url, consumer_key, consumer_secret, args = {}
       # Required args
-      @url = url
-      @consumer_key = consumer_key
+      @url             = url
+      @consumer_key    = consumer_key
       @consumer_secret = consumer_secret
 
       # Optional args
       defaults = {
-        wp_api: false,
-        version: "v3",
-        verify_ssl: true,
+        wp_api:           false,
+        version:          "v3",
+        verify_ssl:       true,
         signature_method: "HMAC-SHA256",
-        httparty_args: {}
+        httparty_args:    {}
       }
-      args = defaults.merge(args)
+      args     = defaults.merge(args)
 
-      @wp_api = args[:wp_api]
-      @version = args[:version]
-      @verify_ssl = args[:verify_ssl] == true
-      @signature_method = args[:signature_method]
-      @debug_mode = args[:debug_mode]
+      @wp_api            = args[:wp_api]
+      @version           = args[:version]
+      @verify_ssl        = args[:verify_ssl] == true
+      @signature_method  = args[:signature_method]
+      @debug_mode        = args[:debug_mode]
       @query_string_auth = args[:query_string_auth]
-      @rest_client_args = args[:rest_client_args]
+      @rest_client_args  = args[:rest_client_args]
 
       # Internal args
       @is_ssl = @url.start_with? "https"
@@ -123,12 +123,13 @@ module WooCommerce
     #
     # Returns the response in JSON String.
     def do_request method, endpoint, data = {}
-      url = get_url(endpoint, method)
-      options = {
-        format: :json,
+      url                               = get_url(endpoint, method)
+      options                           = {
+        format:  :json,
         headers: {
-          "User-Agent" => "WooCommerce API Client-Ruby/#{WooCommerce::VERSION}",
-          Accept: "application/json"
+          "User-Agent"      => "WooCommerce API Client-Ruby/#{WooCommerce::VERSION}",
+          "Accept"          => '*/*',
+          "Accept-Encoding" => 'gzip, deflate',
         }
       }
       options[:headers]["Content-Type"] = "application/json;charset=utf-8" if !data.empty?
@@ -136,14 +137,16 @@ module WooCommerce
 
       # Set basic authentication.
       if @is_ssl
-        options[:verify_ssl] = @verify_ssl
+        options[:headers][:verify_ssl] = @verify_ssl
+        options[:headers].delete(:verify_ssl)
+
         if @query_string_auth
-          uri = URI.parse(url)
+          uri          = URI.parse(url)
           new_query_ar = URI.decode_www_form(uri.query || '')
           new_query_ar << [:consumer_key, @consumer_key]
           new_query_ar << [:consumer_secret, @consumer_secret]
           uri.query = URI.encode_www_form(new_query_ar)
-          url = uri.to_s
+          url       = uri.to_s
         else
           options.merge!({
                            username: @consumer_key,
@@ -190,7 +193,7 @@ module WooCommerce
             "#{key}[#{inner_key}]=#{inner_value}"
           end
         when Array
-          value.map {|inner_value| "#{key}[]=#{inner_value}"}
+          value.map { |inner_value| "#{key}[]=#{inner_value}" }
         else
           "#{key}=#{value}"
         end
