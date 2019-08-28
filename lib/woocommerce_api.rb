@@ -159,7 +159,7 @@ module WooCommerce
       options.merge!(payload: data.to_json) if !data.empty?
       options.merge!(@rest_client_args) if @rest_client_args
 
-      RestClient::Request.execute(options.merge(:verify_ssl => false))
+      RestClient::Request.execute(options)
     end
 
     # Internal: Generates an oauth url given current settings
